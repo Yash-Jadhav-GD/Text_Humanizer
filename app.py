@@ -30,18 +30,18 @@ def extract_text(response):
         last_punct = max(text.rfind("."), text.rfind("!"), text.rfind("?"))
         text = text[: last_punct + 1]
 
-    # Clean up escape chars
     text = text.replace("\\n", " ").replace("\\", "").strip()
     return text
 
 
 # ---------- AI GENERATION FUNCTION ----------
-# ✅ Providers confirmed working with latest g4f (Oct 2025)
+# ✅ These providers exist in all versions of g4f
 providers = [
     Provider.You,
     Provider.Blackbox,
-    Provider.DeepSeek,
-    Provider.FreeGpt,
+    Provider.Bing,
+    Provider.HuggingChat,
+    Provider.OpenaiChat,
 ]
 
 def generate_humanized_text(input_text):
