@@ -8,7 +8,6 @@ def extract_text(response):
     """Extract clean text only, removing JSON and trailing metadata."""
     text = str(response)
 
-    # Try JSON extraction
     try:
         data = json.loads(text)
         content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
@@ -17,15 +16,11 @@ def extract_text(response):
     except Exception:
         pass
 
-    # Fallback regex extraction
     match = re.search(r"'content':\s*'([^']+)'", text)
     if match:
         text = match.group(1)
 
-    # Remove trailing metadata
     text = re.split(r",\s*'finish_reason'|,\s*'logprobs'|,\s*'usage'|\}\}|\}\]", text)[0]
-
-    # Trim at last punctuation
     if any(p in text for p in [".", "!", "?"]):
         last_punct = max(text.rfind("."), text.rfind("!"), text.rfind("?"))
         text = text[: last_punct + 1]
@@ -34,20 +29,19 @@ def extract_text(response):
     return text
 
 
-# ---------- AI GENERATION FUNCTION ----------
-# ✅ These providers exist in all versions of g4f
+# ---------- PROVIDERS ----------
+# ✅ These work without login or API key
 providers = [
-    Provider.You,
-    Provider.Blackbox,
-    Provider.Bing,
-    Provider.HuggingChat,
-    Provider.OpenaiChat,
+    Provider.H2o,           # Stable free model
+    Provider.Perplexity,    # Lightweight model
+    Provider.Bing,          # Reliable fallback
 ]
 
+# ---------- AI GENERATION ----------
 def generate_humanized_text(input_text):
     prompt = f"""
     Rewrite the following text to sound more natural, fluent, and human.
-    Maintain the meaning but make it smoother and conversational.
+    Keep the meaning the same but make it conversational.
 
     Text:
     {input_text}
@@ -61,9 +55,13 @@ def generate_humanized_text(input_text):
                 messages=[{"role": "user", "content": prompt}],
             )
             clean_output = extract_text(response)
-            if clean_output:
+
+            # Ignore blank or login messages
+            if clean_output and "login" not in clean_output.lower() and len(clean_output.split()) > 3:
                 st.info(f"✅ Response from: {provider.__name__}")
                 return clean_output
+            else:
+                st.warning(f"⚠️ {provider.__name__} returned invalid output.")
         except Exception as e:
             st.warning(f"⚠️ {provider.__name__} failed: {e}")
             continue
@@ -74,7 +72,7 @@ def generate_humanized_text(input_text):
 # ---------- STREAMLIT UI ----------
 st.set_page_config(page_title="Text Humanizer (Free)", page_icon="🧠", layout="centered")
 st.title("🧠 Free AI Text Humanizer")
-st.write("Paste your text below to make it sound more natural and human — powered by free AI models.")
+st.write("Paste text below to get a smoother, more natural version — no API key needed!")
 
 input_text = st.text_area("✍️ Enter your text:", height=200, placeholder="Paste your text here...")
 
@@ -87,4 +85,4 @@ if st.button("✨ Humanize Text"):
     else:
         st.warning("Please enter some text first.")
 
-st.caption("Powered by GPT4Free • No API key • Clean text output ⚙️")
+st.caption("Powered by GPT4Free • No API key • Fully free ⚙️")
