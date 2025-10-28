@@ -36,12 +36,12 @@ def extract_text(response):
 
 
 # ---------- AI GENERATION FUNCTION ----------
-# Free providers (no API key needed)
+# ✅ Providers confirmed working with latest g4f (Oct 2025)
 providers = [
     Provider.You,
     Provider.Blackbox,
-    Provider.GithubCopilot,
-    Provider.HuggingChat,
+    Provider.DeepSeek,
+    Provider.FreeGpt,
 ]
 
 def generate_humanized_text(input_text):
